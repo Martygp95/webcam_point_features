@@ -76,8 +76,6 @@ int main(int argc, char *argv[])
 	v_ws = mask.rows/v_divisions;   // =v_window_size
 
 
-	//std::cout << "Màscara = " << std::endl << " " << h_ws << std::endl << std::endl;
-
 	for(int i=0; i < h_divisions; i++)
 	{
 		for (int j=0; j < v_divisions ; j++)
@@ -92,13 +90,11 @@ int main(int argc, char *argv[])
 
 			        mask.at<cv::Vec3b>(Px,Py)[0] = 255;
 			       // mask.at<cv::Vec3b>(Px,Py)[1] = 255;  
-			        //mask.at<cv::Vec3b>(Px,Py)[2] = 255;  
+			       //mask.at<cv::Vec3b>(Px,Py)[2] = 255;  
 
 				}
 			}
 
-		//std::cout << "Màscara = " << std::endl << " " << mask << std::endl << std::endl;
-		//cv::waitKey(10000);
 		//detect and compute(extract) features
 	 	orb_detector->detectAndCompute(image, mask, point_set, descriptor_set);
 		//draw points on the image
