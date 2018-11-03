@@ -10,13 +10,19 @@
 #include <vector>
 
 //consts
-const unsigned int MIN_NUM_FEATURES = 300; //minimum number of point fetaures
+const unsigned int MIN_NUM_FEATURES = 10; //minimum number of point fetaures
 
 int main(int argc, char *argv[])
 {
     cv::VideoCapture camera; //OpenCV video capture object
     cv::Mat image; //OpenCV image object
-	int cam_id; //camera id . Associated to device number in /dev/videoX
+    cv:: Mat mask;
+    int h_divisions = 4;
+    int v_divisions = 3; 
+    int n_cols = image.rows;
+    int n_rows = image.cols;
+    int h_ws,v_ws,i,j,k,l,Px,Py;
+    int cam_id; //camera id . Associated to device number in /dev/videoX
     cv::Ptr<cv::ORB> orb_detector = cv::ORB::create(); //ORB point feature detector
     orb_detector->setMaxFeatures(MIN_NUM_FEATURES);
     std::vector<cv::KeyPoint> point_set; //set of point features
@@ -56,22 +62,55 @@ int main(int argc, char *argv[])
             std::cout << "No image" << std::endl;
             cv::waitKey();
         }
+	
 
     //**************** Find ORB point fetaures and descriptors ****************************
 
         //clear previous points
         point_set.clear();
+	cv::Mat mask = cv::Mat::zeros(cv::Size(image.rows, image.cols), CV_8UC1);
+	//std::cout << "Màscara = " << std::endl << " " << h_divisions << std::endl << std::endl;
+	//cv::waitKey(10000);
 
-        //detect and compute(extract) features
-        orb_detector->detectAndCompute(image, cv::noArray(), point_set, descriptor_set);
+        h_ws = mask.cols/h_divisions;    // =h_window_size
+	v_ws = mask.rows/v_divisions;   // =v_window_size
 
-        //draw points on the image
-        cv::drawKeypoints( image, point_set, image, 255, cv::DrawMatchesFlags::DEFAULT );
 
-    //********************************************************************
+	//std::cout << "Màscara = " << std::endl << " " << h_ws << std::endl << std::endl;
 
-        //show image
-        cv::imshow("Output Window", image);
+	for(int i=0; i < h_divisions; i++)
+	{
+		for (int j=0; j < v_divisions ; j++)
+		{
+			for (k=0; k<h_ws; k++)
+			{
+				for (l=0; l<v_ws; l++)
+				{
+
+				Px = (i*h_ws)+k; 
+				Py = (j*v_ws)+l;	
+
+			        mask.at<cv::Vec3b>(Px,Py)[0] = 255;
+			       // mask.at<cv::Vec3b>(Px,Py)[1] = 255;  
+			        //mask.at<cv::Vec3b>(Px,Py)[2] = 255;  
+
+				}
+			}
+
+		//std::cout << "Màscara = " << std::endl << " " << mask << std::endl << std::endl;
+		//cv::waitKey(10000);
+		//detect and compute(extract) features
+	 	orb_detector->detectAndCompute(image, mask, point_set, descriptor_set);
+		//draw points on the image
+	 	cv::drawKeypoints(image, point_set, image, 255, cv::DrawMatchesFlags::DEFAULT);
+		//show image
+		cv::imshow("Output Window", image);
+		cv::waitKey(10);	
+	 	cv::Mat mask = cv::Mat::zeros(cv::Size(image.rows, image.cols), CV_8UC1);
+		}	
+	} 
+	
+//********************************************************************     
 
 		//Waits 30 millisecond to check if 'q' key has been pressed. If so, breaks the loop. Otherwise continues.
     	if( (unsigned char)(cv::waitKey(30) & 0xff) == 'q' ) break;
